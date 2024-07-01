@@ -34,3 +34,40 @@ terabyte size, querying them becomes difficult with standard tools.
 They may be slightly bigger than a RocksDB, SLED or MDBX database,
 but they can be surprisingly fast once the disc cache has warmed up.
 
+### Simple example using strings
+
+Given a sorted database, which could be very large, the
+function 'get_matching_lines' fill return
+an iterator over the range of items equal to the key.
+
+```rust
+    use textdb::Table;
+
+    let text = "A\nB\nC\nC\nD\nE\nF\nF\nF\nF\nF\nG\nH\nI\nJ\nK\nL\n";
+    let textdb = Table::text_tsv_from_str(text);
+
+    assert!(textdb.is_sorted().unwrap());
+
+    assert_eq!(textdb.get_matching_lines("F".as_bytes()).count(), 5);
+    assert_eq!(textdb.get_matching_lines("C".as_bytes()).count(), 2);
+```
+
+### Simple example using integer keys
+
+Note that they key may be a string or any Rust type that implements
+'FromStr'.
+
+```rust
+    use textdb::Table;
+
+    let kv = [(6, 6), (10, 1), (113, 2), (113, 5), (129, 3), (140, 0), (168, 7), (205, 9), (211, 8), (215, 4)];
+    let text = kv.iter().map(|(k, v)| format!("{k}\t{v}")).collect::<Vec<_>>().join("\n");
+    let accessor = accessor::TsvParse::<u8, 0>::default();
+    let map = maps::SafeMemoryMap::from_str(&text);
+    let textdb = Table::new(map, accessor);
+
+    // This would not be true for text order sorting.
+    assert!(textdb.is_sorted().unwrap());
+
+    assert_eq!(textdb.get_matching_lines(&113).count(), 2);
+```
