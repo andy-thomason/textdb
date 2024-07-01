@@ -2,12 +2,18 @@
 name = "textdb"
 version = "0.1.0"
 edition = "2021"
+description = "A high performance read only text database"
+license = "MIT"
+license-file = "LICENSE"
+repository = "https://github.com/andy-thomason/textdb"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+default = []
+mmap = ["memmap2"]
 
 [dependencies]
 anyhow = "1.0.86"
-memmap2 = "0.9.4"
+memmap2 = { version = "0.9.4", optional = true }
 
 [dev-dependencies]
 tempfile = "3"
